@@ -54,7 +54,7 @@ fun SpringBoard() {
             drawPath(
                 states.curPath,
                 Color.Black,
-                style = Stroke(60f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+                style = Stroke(states.curWidth, cap = StrokeCap.Round, join = StrokeJoin.Round)
             )
         }
     }

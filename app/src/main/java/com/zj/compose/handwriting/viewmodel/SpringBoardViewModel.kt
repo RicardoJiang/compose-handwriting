@@ -3,21 +3,21 @@ package com.zj.compose.handwriting.viewmodel
 import android.view.MotionEvent
 import androidx.compose.ui.graphics.Path
 import androidx.lifecycle.ViewModel
-import com.zj.compose.handwriting.ui.widget.HandWritingPoint
 import com.zj.compose.handwriting.viewmodel.SpringBoardViewModel.Companion.NORMAL_WIDTH
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlin.math.abs
 
 class SpringBoardViewModel : ViewModel() {
     companion object {
         const val MAX_SPEED = 2f
         const val MIN_SPEED = 0.1f
         const val NORMAL_WIDTH = 20f
+        const val STEP_FACTOR = 10
     }
 
     private val _viewStates = MutableStateFlow(SpringBoardViewStates())
     val viewStates = _viewStates.asStateFlow()
+    private val bezier = Bezier()
 
     fun dispatch(action: SpringBoardViewAction) {
         when (action) {
@@ -28,71 +28,65 @@ class SpringBoardViewModel : ViewModel() {
     }
 
     private fun onActionDown(event: MotionEvent) {
-        //updatePointList(event = event)
-        val curPath = viewStates.value.curPath
-        curPath.reset()
-        curPath.moveTo(event.x, event.y)
-        _viewStates.value =
-            _viewStates.value.copy(curPath = curPath, curX = event.x, curY = event.y)
+        val curPoint = ControllerPoint(event.x, event.y)
+        curPoint.width = 0f
+        _viewStates.value = _viewStates.value.copy(
+            pointList = emptyList(),
+            curPoint = curPoint,
+            curX = event.x,
+            curY = event.y,
+            curWidth = NORMAL_WIDTH,
+            curTime = System.currentTimeMillis()
+        )
     }
 
     private fun onActionMove(event: MotionEvent) {
-        //updatePointList(event = event)
+        val lastPoint = viewStates.value.curPoint
+        val curPoint = ControllerPoint(event.x, event.y)
+        val lineWidth = calWidth(event = event)
+        curPoint.width = lineWidth
+        if (viewStates.value.pointList.size < 2) {
+            bezier.init(lastPoint, curPoint)
+        } else {
+            bezier.addNode(curPoint)
+        }
         val moveX = event.x
         val moveY = event.y
-        val previousX = viewStates.value.curX
-        val previousY = viewStates.value.curY
-        val dx = abs(moveX - previousX)
-        val dy = abs(moveY - previousY)
-        if (dx > 3 || dy > 3) {
-            val curPath = viewStates.value.curPath
-            curPath.quadraticBezierTo(previousX, previousY, moveX, moveY)
-            val lineWidth = calWidth(event = event)
-            _viewStates.value = _viewStates.value.copy(
-                curPath = curPath,
-                curX = moveX,
-                curY = moveY,
-                curWidth = lineWidth,
-                curTime = System.currentTimeMillis()
-            )
+        val curDis = getDistance(event)
+        val steps: Int = 1 + (curDis / STEP_FACTOR).toInt()
+        val step = 1.0 / steps
+        val list = mutableListOf<ControllerPoint>()
+        var t = 0.0
+        while (t < 1.0) {
+            val point: ControllerPoint = bezier.getPoint(t)
+            list.add(point)
+            t += step
         }
+        addPoints(list)
+        _viewStates.value = _viewStates.value.copy(
+            curPoint = curPoint,
+            curX = moveX,
+            curY = moveY,
+            curWidth = lineWidth,
+            curTime = System.currentTimeMillis()
+        )
+
     }
 
     private fun onActionUp(event: MotionEvent) {
+        bezier.end()
         //updatePointList(event = event)
     }
 
-    /**
-     * var v = s / t;
-    var ResultLineWidth;
-    //处理速度很慢和很快的情况
-    if (v <= minlinespeed)
-    ResultLineWidth = maxlinewidth;
-    else if (v >= maxlinespeed)
-    ResultLineWidth = minlinewidth;
-    else
-    ResultLineWidth = maxlinewidth - (v - minlinespeed) / (maxlinespeed - minlinespeed) * (maxlinewidth - minlinewidth);
-    if (laslinewidth == -1)
-    return ResultLineWidth;
-    return laslinewidth * 2 / 3 + ResultLineWidth * 1 / 3;
-     */
     private fun calWidth(event: MotionEvent): Float {
         val distance = getDistance(event)
-        val duration = getTime()
-        val speed = distance / duration
-        val lineWidth = when {
-            speed <= MIN_SPEED -> {
-                (NORMAL_WIDTH * MAX_SPEED)
-            }
-            speed >= MAX_SPEED -> {
-                (NORMAL_WIDTH * MIN_SPEED)
-            }
-            else -> {
-                (NORMAL_WIDTH * speed)
-            }
-        }
-        val lastWidth = viewStates.value.curWidth
-        return ((lastWidth * 2 / 3) + (lineWidth * 1 / 3))
+        val calVel = distance * 0.002
+        //返回指定数字的自然对数
+        //手指滑动的越快，这个值越小，为负数
+        val vfac = Math.log(1.5 * 2.0f) * -calVel
+
+        val width = NORMAL_WIDTH * maxOf(Math.exp(-calVel),0.2)
+        return width.toFloat()
     }
 
     private fun getDistance(event: MotionEvent): Float {
@@ -107,15 +101,23 @@ class SpringBoardViewModel : ViewModel() {
     }
 
     private fun updatePointList(event: MotionEvent) {
-        val list = mutableListOf<HandWritingPoint>()
+        val list = mutableListOf<ControllerPoint>()
         list.addAll(_viewStates.value.pointList)
-        list.add(HandWritingPoint(event.x, event.y))
+        list.add(ControllerPoint(event.x, event.y))
+        _viewStates.value = _viewStates.value.copy(pointList = list)
+    }
+
+    private fun addPoints(pointList: List<ControllerPoint>) {
+        val list = mutableListOf<ControllerPoint>()
+        list.addAll(_viewStates.value.pointList)
+        list.addAll(pointList)
         _viewStates.value = _viewStates.value.copy(pointList = list)
     }
 }
 
 data class SpringBoardViewStates(
-    val pointList: List<HandWritingPoint> = listOf(),
+    val pointList: List<ControllerPoint> = listOf(),
+    val curPoint: ControllerPoint = ControllerPoint(),
     val curPath: Path = Path(),
     val curX: Float = 0f,
     val curY: Float = 0f,

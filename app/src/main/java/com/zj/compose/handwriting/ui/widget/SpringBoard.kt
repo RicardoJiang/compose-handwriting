@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -51,11 +52,20 @@ fun SpringBoard() {
                     true
                 })
         ) {
-            drawPath(
-                states.curPath,
-                Color.Black,
-                style = Stroke(states.curWidth, cap = StrokeCap.Round, join = StrokeJoin.Round)
-            )
+            states.pointList.forEach {
+                drawCircle(Color.Black,it.width, Offset(it.x,it.y))
+//                drawOval(
+//                    Color.Black,
+//                    topLeft = Offset(it.x, it.y),
+//                    Size(it.width,it.width),
+//                    style = Stroke(
+//                        width = 10f,
+//                        miter = 1f,
+//                        cap = StrokeCap.Round,
+//                        join = StrokeJoin.Round
+//                    )
+//                )
+            }
         }
     }
 }

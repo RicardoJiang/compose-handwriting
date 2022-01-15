@@ -1,5 +1,6 @@
 package com.zj.compose.handwriting.ui.widget
 
+import android.graphics.Bitmap
 import android.view.MotionEvent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
@@ -10,6 +11,10 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zj.compose.handwriting.viewmodel.SpringBoardViewAction
@@ -24,7 +29,6 @@ import com.zj.compose.handwriting.viewmodel.SpringBoardViewModel
 fun SpringBoard() {
     val viewModel = viewModel<SpringBoardViewModel>()
     val states by viewModel.viewStates.collectAsState()
-
     Box(
         Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -47,9 +51,11 @@ fun SpringBoard() {
                     true
                 })
         ) {
-            states.pointList.forEach {
-                drawCircle(Color.Black,20f, Offset(it.x,it.y))
-            }
+            drawPath(
+                states.curPath,
+                Color.Black,
+                style = Stroke(60f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+            )
         }
     }
 }

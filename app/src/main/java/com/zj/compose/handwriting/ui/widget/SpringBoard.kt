@@ -1,36 +1,55 @@
 package com.zj.compose.handwriting.ui.widget
 
+import android.view.MotionEvent
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.zj.compose.handwriting.viewmodel.SpringBoardViewAction
+import com.zj.compose.handwriting.viewmodel.SpringBoardViewModel
 
 /**
  * 春联手写板
  */
 
+@ExperimentalComposeUiApi
 @Composable
 fun SpringBoard() {
+    val viewModel = viewModel<SpringBoardViewModel>()
+    val states by viewModel.viewStates.collectAsState()
+
     Box(
-        Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectDragGestures(onDragStart = {
-
-                }, onDragEnd = {
-
-                }, onDrag = { change, dragAmount ->
-
-                })
-            },
+        Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Canvas(modifier = Modifier) {
-
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInteropFilter(onTouchEvent = {
+                    when (it.action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            viewModel.dispatch(SpringBoardViewAction.ActionDown(it))
+                        }
+                        MotionEvent.ACTION_MOVE -> {
+                            viewModel.dispatch(SpringBoardViewAction.ActionMove(it))
+                        }
+                        MotionEvent.ACTION_UP -> {
+                            viewModel.dispatch(SpringBoardViewAction.ActionUp(it))
+                        }
+                    }
+                    true
+                })
+        ) {
+            states.pointList.forEach {
+                drawCircle(Color.Black,20f, Offset(it.x,it.y))
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.zj.compose.handwriting.viewmodel
 
+import android.graphics.Bitmap
 import android.view.MotionEvent
 import androidx.compose.ui.graphics.Path
 import androidx.lifecycle.ViewModel
@@ -24,7 +25,13 @@ class SpringBoardViewModel : ViewModel() {
             is SpringBoardViewAction.ActionDown -> onActionDown(action.event)
             is SpringBoardViewAction.ActionMove -> onActionMove(action.event)
             is SpringBoardViewAction.ActionUp -> onActionUp(action.event)
+            is SpringBoardViewAction.ConfirmItem -> confirmItem(action.bitmap)
         }
+    }
+
+    private fun confirmItem(bitmap: Bitmap) {
+        val bitmapList = viewStates.value.bitmapList.toMutableList().apply { add(bitmap) }
+        _viewStates.value = viewStates.value.copy(bitmapList = bitmapList)
     }
 
     private fun onActionDown(event: MotionEvent) {
@@ -35,8 +42,7 @@ class SpringBoardViewModel : ViewModel() {
             curPoint = curPoint,
             curX = event.x,
             curY = event.y,
-            curWidth = NORMAL_WIDTH,
-            curTime = System.currentTimeMillis()
+            curWidth = NORMAL_WIDTH
         )
     }
 
@@ -67,8 +73,7 @@ class SpringBoardViewModel : ViewModel() {
             curPoint = curPoint,
             curX = moveX,
             curY = moveY,
-            curWidth = lineWidth,
-            curTime = System.currentTimeMillis()
+            curWidth = lineWidth
         )
 
     }
@@ -96,10 +101,6 @@ class SpringBoardViewModel : ViewModel() {
         return (event.x - lastX) * (event.x - lastX) + (event.y - lastY) * (event.y - lastY)
     }
 
-    private fun getTime(): Long {
-        val lastTime = viewStates.value.curTime
-        return System.currentTimeMillis() - lastTime
-    }
 
     private fun updatePointList(event: MotionEvent) {
         val list = mutableListOf<ControllerPoint>()
@@ -122,13 +123,12 @@ data class SpringBoardViewStates(
     val curX: Float = 0f,
     val curY: Float = 0f,
     val curWidth: Float = NORMAL_WIDTH,
-    val curTime: Long = System.currentTimeMillis()
+    val bitmapList: List<Bitmap> = listOf()
 )
 
 sealed class SpringBoardViewAction {
     data class ActionDown(val event: MotionEvent) : SpringBoardViewAction()
     data class ActionMove(val event: MotionEvent) : SpringBoardViewAction()
     data class ActionUp(val event: MotionEvent) : SpringBoardViewAction()
-    object DeleteItem : SpringBoardViewAction()
-    object ConfirmItem : SpringBoardViewAction()
+    data class ConfirmItem(val bitmap: Bitmap) : SpringBoardViewAction()
 }

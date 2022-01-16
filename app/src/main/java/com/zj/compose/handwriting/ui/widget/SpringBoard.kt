@@ -20,14 +20,15 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInteropFilter
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.accompanist.flowlayout.FlowRow
 import com.zj.compose.handwriting.R
 import com.zj.compose.handwriting.viewmodel.SpringBoardViewAction
 import com.zj.compose.handwriting.viewmodel.SpringBoardViewModel
@@ -54,11 +55,6 @@ fun SpringPage() {
     val newCanvas = remember {
         android.graphics.Canvas(bitmap)
     }
-    val paint = remember {
-        Paint().apply {
-            color = android.graphics.Color.BLACK
-        }
-    }
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         BoxWithConstraints(
             modifier = Modifier
@@ -73,7 +69,7 @@ fun SpringPage() {
                     .fillMaxSize(),
                 contentDescription = ""
             )
-            SpringBoard(viewModel = viewModel, states = states, bitmap, newCanvas, paint)
+            SpringBoard(viewModel = viewModel, states = states, bitmap, newCanvas)
         }
         Divider(
             modifier = Modifier
@@ -93,14 +89,19 @@ fun SpringPage() {
                 modifier = Modifier
                     .wrapContentSize()
                     .clickable {
-                        newCanvas.drawColor(android.graphics.Color.WHITE, PorterDuff.Mode.CLEAR);
+                        newCanvas.drawColor(android.graphics.Color.WHITE, PorterDuff.Mode.CLEAR)
                     },
                 contentDescription = ""
             )
             Image(
                 painter = painterResource(id = R.mipmap.icon_confirm),
                 modifier = Modifier
-                    .wrapContentSize(),
+                    .wrapContentSize()
+                    .clickable {
+                        val curBitmap = bitmap.copy(bitmap.config, true)
+                        viewModel.dispatch(SpringBoardViewAction.ConfirmItem(curBitmap))
+                        newCanvas.drawColor(android.graphics.Color.WHITE, PorterDuff.Mode.CLEAR)
+                    },
                 contentDescription = ""
             )
         }
@@ -110,6 +111,11 @@ fun SpringPage() {
                 .height(1.dp)
                 .background(Color(0xFFCCCCCC))
         )
+        FlowRow(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+            states.bitmapList.forEach {
+                Image(bitmap = it.asImageBitmap(),modifier = Modifier.size(80.dp), contentDescription = "")
+            }
+        }
     }
 }
 
@@ -119,9 +125,13 @@ fun SpringBoard(
     viewModel: SpringBoardViewModel,
     states: SpringBoardViewStates,
     bitmap: Bitmap,
-    newCanvas: Canvas,
-    paint: Paint
+    newCanvas: Canvas
 ) {
+    val paint = remember {
+        Paint().apply {
+            color = android.graphics.Color.BLACK
+        }
+    }
     BoxWithConstraints(
         Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center

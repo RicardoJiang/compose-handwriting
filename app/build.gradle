@@ -65,4 +65,5 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.0'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0"
     implementation("androidx.navigation:navigation-compose:2.4.0-rc01")
+    implementation "com.google.accompanist:accompanist-flowlayout:0.22.0-rc"
 }

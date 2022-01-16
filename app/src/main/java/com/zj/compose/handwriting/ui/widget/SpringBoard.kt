@@ -24,8 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -221,9 +219,7 @@ fun SpringBoard(
                     true
                 })
         ) {
-            drawIntoCanvas {
-                it.nativeCanvas.drawBitmap(bitmap, 0f, 0f, paint)
-            }
+            drawImage(bitmap.asImageBitmap())
             states.pointList.forEach {
                 drawCircle(Color.Black, it.width, Offset(it.x, it.y))
             }

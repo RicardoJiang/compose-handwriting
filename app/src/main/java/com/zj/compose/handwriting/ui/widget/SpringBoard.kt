@@ -45,8 +45,8 @@ import com.zj.compose.handwriting.viewmodel.SpringBoardViewStates
 fun SpringPage(onPreview: () -> Unit) {
     val viewModel = viewModel<SpringBoardViewModel>()
     val states by viewModel.viewStates.collectAsState()
-    val width = with(LocalDensity.current) { 400.dp.toPx() }
-    val height = with(LocalDensity.current) { 400.dp.toPx() }
+    val width = with(LocalDensity.current) { 300.dp.toPx() }
+    val height = with(LocalDensity.current) { 300.dp.toPx() }
     val bitmap = remember {
         Bitmap.createBitmap(
             width.toInt(),
@@ -64,7 +64,7 @@ fun SpringPage(onPreview: () -> Unit) {
         ) {
             BoxWithConstraints(
                 modifier = Modifier
-                    .size(400.dp)
+                    .size(300.dp)
                     .padding(16.dp)
             ) {
 

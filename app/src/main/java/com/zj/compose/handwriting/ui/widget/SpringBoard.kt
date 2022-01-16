@@ -10,7 +10,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Button
 import androidx.compose.material.Divider
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -55,66 +57,89 @@ fun SpringPage() {
     val newCanvas = remember {
         android.graphics.Canvas(bitmap)
     }
-    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-        BoxWithConstraints(
-            modifier = Modifier
-                .size(400.dp)
-                .padding(16.dp)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            BoxWithConstraints(
+                modifier = Modifier
+                    .size(400.dp)
+                    .padding(16.dp)
+            ) {
 
 
-            Image(
-                painter = painterResource(id = R.mipmap.icon_draw_bg),
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentDescription = ""
-            )
-            SpringBoard(viewModel = viewModel, states = states, bitmap, newCanvas)
-        }
-        Divider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(Color(0xFFCCCCCC))
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(40.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = R.mipmap.icon_delete),
-                modifier = Modifier
-                    .wrapContentSize()
-                    .clickable {
-                        newCanvas.drawColor(android.graphics.Color.WHITE, PorterDuff.Mode.CLEAR)
-                    },
-                contentDescription = ""
-            )
-            Image(
-                painter = painterResource(id = R.mipmap.icon_confirm),
-                modifier = Modifier
-                    .wrapContentSize()
-                    .clickable {
-                        val curBitmap = bitmap.copy(bitmap.config, true)
-                        viewModel.dispatch(SpringBoardViewAction.ConfirmItem(curBitmap))
-                        newCanvas.drawColor(android.graphics.Color.WHITE, PorterDuff.Mode.CLEAR)
-                    },
-                contentDescription = ""
-            )
-        }
-        Divider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(Color(0xFFCCCCCC))
-        )
-        FlowRow(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
-            states.bitmapList.forEach {
-                Image(bitmap = it.asImageBitmap(),modifier = Modifier.size(80.dp), contentDescription = "")
+                Image(
+                    painter = painterResource(id = R.mipmap.icon_draw_bg),
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentDescription = ""
+                )
+                SpringBoard(viewModel = viewModel, states = states, bitmap, newCanvas)
             }
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(Color(0xFFCCCCCC))
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = R.mipmap.icon_delete),
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .clickable {
+                            newCanvas.drawColor(android.graphics.Color.WHITE, PorterDuff.Mode.CLEAR)
+                        },
+                    contentDescription = ""
+                )
+                Image(
+                    painter = painterResource(id = R.mipmap.icon_confirm),
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .clickable {
+                            val curBitmap = bitmap.copy(bitmap.config, true)
+                            viewModel.dispatch(SpringBoardViewAction.ConfirmItem(curBitmap))
+                            newCanvas.drawColor(android.graphics.Color.WHITE, PorterDuff.Mode.CLEAR)
+                        },
+                    contentDescription = ""
+                )
+            }
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(Color(0xFFCCCCCC))
+            )
+            FlowRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            ) {
+                states.bitmapList.forEach {
+                    Image(
+                        bitmap = it.asImageBitmap(),
+                        modifier = Modifier.size(80.dp),
+                        contentDescription = ""
+                    )
+                }
+            }
+        }
+        Button(
+            onClick = { },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .height(50.dp)
+                .align(Alignment.BottomCenter)
+        ) {
+            Text(text = "生成春联")
         }
     }
 }

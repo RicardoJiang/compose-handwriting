@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zj.compose.handwriting.BitmapUtils
+import com.zj.compose.handwriting.SpringBoardConfig.ITEM_SIZE
 import com.zj.compose.handwriting.viewmodel.SpringBoardViewModel
 
 @Composable
@@ -49,25 +50,19 @@ fun SpringPreviewPage(onBack: () -> Unit) {
 fun SpringPreview() {
     val viewModel = viewModel<SpringBoardViewModel>()
     val states by viewModel.viewStates.collectAsState()
-    val itemSize = with(LocalDensity.current) { 300.dp.toPx() }
+    val itemSize = with(LocalDensity.current) { ITEM_SIZE.dp.toPx() }
     val bitmap = remember {
         Bitmap.createBitmap(
-            itemSize.toInt(),
-            (states.bitmapList.size * itemSize).toInt(),
-            Bitmap.Config.ARGB_8888
+            itemSize.toInt(), (states.bitmapList.size * itemSize).toInt(), Bitmap.Config.ARGB_8888
         )
     }
-    val newCanvas = remember {
-        android.graphics.Canvas(bitmap)
-    }
-    val paint = remember {
-        Paint()
-    }
+    val newCanvas = remember { android.graphics.Canvas(bitmap) }
+    val paint = remember { Paint() }
     val context = LocalContext.current
     BoxWithConstraints(
         modifier = Modifier
-            .width(300.dp)
-            .height((300 * states.bitmapList.size).dp)
+            .width(ITEM_SIZE.dp)
+            .height((ITEM_SIZE * states.bitmapList.size).dp)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onLongPress = {

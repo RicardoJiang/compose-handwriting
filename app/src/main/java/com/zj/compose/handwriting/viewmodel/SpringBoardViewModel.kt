@@ -3,18 +3,13 @@ package com.zj.compose.handwriting.viewmodel
 import android.graphics.Bitmap
 import android.view.MotionEvent
 import androidx.lifecycle.ViewModel
-import com.zj.compose.handwriting.viewmodel.SpringBoardViewModel.Companion.NORMAL_WIDTH
+import com.zj.compose.handwriting.SpringBoardConfig.NORMAL_WIDTH
+import com.zj.compose.handwriting.SpringBoardConfig.STEP_FACTOR
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlin.math.exp
 
 class SpringBoardViewModel : ViewModel() {
-    companion object {
-        const val MAX_SPEED = 2f
-        const val MIN_SPEED = 0.1f
-        const val NORMAL_WIDTH = 20f
-        const val STEP_FACTOR = 10
-    }
-
     private val _viewStates = MutableStateFlow(SpringBoardViewStates())
     val viewStates = _viewStates.asStateFlow()
     private val bezier = Bezier()
@@ -47,10 +42,7 @@ class SpringBoardViewModel : ViewModel() {
         curPoint.width = 0f
         _viewStates.value = _viewStates.value.copy(
             pointList = emptyList(),
-            curPoint = curPoint,
-            curX = event.x,
-            curY = event.y,
-            curWidth = NORMAL_WIDTH
+            curPoint = curPoint
         )
     }
 
@@ -64,8 +56,6 @@ class SpringBoardViewModel : ViewModel() {
         } else {
             bezier.addNode(curPoint)
         }
-        val moveX = event.x
-        val moveY = event.y
         val curDis = getDistance(event)
         val steps: Int = 1 + (curDis / STEP_FACTOR).toInt()
         val step = 1.0 / steps
@@ -77,44 +67,25 @@ class SpringBoardViewModel : ViewModel() {
             t += step
         }
         addPoints(list)
-        _viewStates.value = _viewStates.value.copy(
-            curPoint = curPoint,
-            curX = moveX,
-            curY = moveY,
-            curWidth = lineWidth
-        )
-
+        _viewStates.value = _viewStates.value.copy(curPoint = curPoint)
     }
 
     private fun onActionUp(event: MotionEvent) {
         bezier.end()
         _viewStates.value = _viewStates.value.copy(pointList = emptyList())
-        //updatePointList(event = event)
     }
 
     private fun calWidth(event: MotionEvent): Float {
         val distance = getDistance(event)
         val calVel = distance * 0.002
-        //返回指定数字的自然对数
-        //手指滑动的越快，这个值越小，为负数
-        val vfac = Math.log(1.5 * 2.0f) * -calVel
-
-        val width = NORMAL_WIDTH * maxOf(Math.exp(-calVel), 0.2)
+        val width = NORMAL_WIDTH * maxOf(exp(-calVel), 0.2)
         return width.toFloat()
     }
 
     private fun getDistance(event: MotionEvent): Float {
-        val lastX = viewStates.value.curX
-        val lastY = viewStates.value.curY
+        val lastX = viewStates.value.curPoint.x
+        val lastY = viewStates.value.curPoint.y
         return (event.x - lastX) * (event.x - lastX) + (event.y - lastY) * (event.y - lastY)
-    }
-
-
-    private fun updatePointList(event: MotionEvent) {
-        val list = mutableListOf<ControllerPoint>()
-        list.addAll(_viewStates.value.pointList)
-        list.add(ControllerPoint(event.x, event.y))
-        _viewStates.value = _viewStates.value.copy(pointList = list)
     }
 
     private fun addPoints(pointList: List<ControllerPoint>) {
@@ -128,9 +99,6 @@ class SpringBoardViewModel : ViewModel() {
 data class SpringBoardViewStates(
     val pointList: List<ControllerPoint> = listOf(),
     val curPoint: ControllerPoint = ControllerPoint(),
-    val curX: Float = 0f,
-    val curY: Float = 0f,
-    val curWidth: Float = NORMAL_WIDTH,
     val bitmapList: List<Bitmap> = listOf()
 )
 

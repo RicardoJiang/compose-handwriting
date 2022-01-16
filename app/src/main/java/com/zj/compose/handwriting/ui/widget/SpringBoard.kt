@@ -42,7 +42,7 @@ import com.zj.compose.handwriting.viewmodel.SpringBoardViewStates
 
 @ExperimentalComposeUiApi
 @Composable
-fun SpringPage() {
+fun SpringPage(onPreview: () -> Unit) {
     val viewModel = viewModel<SpringBoardViewModel>()
     val states by viewModel.viewStates.collectAsState()
     val width = with(LocalDensity.current) { 400.dp.toPx() }
@@ -132,7 +132,7 @@ fun SpringPage() {
             }
         }
         Button(
-            onClick = { },
+            onClick = { onPreview.invoke() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)

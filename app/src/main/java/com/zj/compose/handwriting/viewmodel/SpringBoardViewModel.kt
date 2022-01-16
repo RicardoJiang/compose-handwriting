@@ -75,6 +75,7 @@ class SpringBoardViewModel : ViewModel() {
 
     private fun onActionUp(event: MotionEvent) {
         bezier.end()
+        _viewStates.value = _viewStates.value.copy(pointList = emptyList())
         //updatePointList(event = event)
     }
 
@@ -85,7 +86,7 @@ class SpringBoardViewModel : ViewModel() {
         //手指滑动的越快，这个值越小，为负数
         val vfac = Math.log(1.5 * 2.0f) * -calVel
 
-        val width = NORMAL_WIDTH * maxOf(Math.exp(-calVel),0.2)
+        val width = NORMAL_WIDTH * maxOf(Math.exp(-calVel), 0.2)
         return width.toFloat()
     }
 
@@ -118,7 +119,6 @@ class SpringBoardViewModel : ViewModel() {
 data class SpringBoardViewStates(
     val pointList: List<ControllerPoint> = listOf(),
     val curPoint: ControllerPoint = ControllerPoint(),
-    val curPath: Path = Path(),
     val curX: Float = 0f,
     val curY: Float = 0f,
     val curWidth: Float = NORMAL_WIDTH,
@@ -129,4 +129,6 @@ sealed class SpringBoardViewAction {
     data class ActionDown(val event: MotionEvent) : SpringBoardViewAction()
     data class ActionMove(val event: MotionEvent) : SpringBoardViewAction()
     data class ActionUp(val event: MotionEvent) : SpringBoardViewAction()
+    object DeleteItem : SpringBoardViewAction()
+    object ConfirmItem : SpringBoardViewAction()
 }

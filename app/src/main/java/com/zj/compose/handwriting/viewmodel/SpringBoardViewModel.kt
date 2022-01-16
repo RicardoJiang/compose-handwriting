@@ -2,7 +2,6 @@ package com.zj.compose.handwriting.viewmodel
 
 import android.graphics.Bitmap
 import android.view.MotionEvent
-import androidx.compose.ui.graphics.Path
 import androidx.lifecycle.ViewModel
 import com.zj.compose.handwriting.viewmodel.SpringBoardViewModel.Companion.NORMAL_WIDTH
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +25,15 @@ class SpringBoardViewModel : ViewModel() {
             is SpringBoardViewAction.ActionMove -> onActionMove(action.event)
             is SpringBoardViewAction.ActionUp -> onActionUp(action.event)
             is SpringBoardViewAction.ConfirmItem -> confirmItem(action.bitmap)
+            is SpringBoardViewAction.DeleteItem -> deleteItem()
+        }
+    }
+
+    private fun deleteItem() {
+        val bitmapList = viewStates.value.bitmapList.toMutableList()
+        if (bitmapList.isNotEmpty()) {
+            bitmapList.removeAt(bitmapList.size - 1)
+            _viewStates.value = _viewStates.value.copy(bitmapList = bitmapList)
         }
     }
 
@@ -131,4 +139,5 @@ sealed class SpringBoardViewAction {
     data class ActionMove(val event: MotionEvent) : SpringBoardViewAction()
     data class ActionUp(val event: MotionEvent) : SpringBoardViewAction()
     data class ConfirmItem(val bitmap: Bitmap) : SpringBoardViewAction()
+    object DeleteItem : SpringBoardViewAction()
 }

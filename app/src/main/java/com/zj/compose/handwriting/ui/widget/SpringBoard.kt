@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.flowlayout.FlowRow
 import com.zj.compose.handwriting.R
+import com.zj.compose.handwriting.ui.theme.Primary
 import com.zj.compose.handwriting.viewmodel.SpringBoardViewAction
 import com.zj.compose.handwriting.viewmodel.SpringBoardViewModel
 import com.zj.compose.handwriting.viewmodel.SpringBoardViewStates
@@ -62,13 +64,12 @@ fun SpringPage(onPreview: () -> Unit) {
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            AppToolsBar(title = "手写春联")
             BoxWithConstraints(
                 modifier = Modifier
                     .size(300.dp)
                     .padding(16.dp)
             ) {
-
-
                 Image(
                     painter = painterResource(id = R.mipmap.icon_draw_bg),
                     modifier = Modifier
@@ -117,27 +118,50 @@ fun SpringPage(onPreview: () -> Unit) {
                     .height(1.dp)
                     .background(Color(0xFFCCCCCC))
             )
-            FlowRow(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
             ) {
-                states.bitmapList.forEach {
-                    Image(
-                        bitmap = it.asImageBitmap(),
-                        modifier = Modifier.size(80.dp),
-                        contentDescription = ""
-                    )
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                ) {
+                    states.bitmapList.forEach {
+                        Image(
+                            bitmap = it.asImageBitmap(),
+                            modifier = Modifier.size(80.dp),
+                            contentDescription = ""
+                        )
+                    }
                 }
+                Image(
+                    painter = painterResource(id = R.mipmap.icon_delete),
+                    contentDescription = "",
+                    modifier = Modifier
+                        .align(
+                            Alignment.TopEnd
+                        )
+                        .padding(0.dp, 16.dp, 0.dp, 0.dp)
+                        .clickable {
+                            viewModel.dispatch(SpringBoardViewAction.DeleteItem)
+                        }
+                )
             }
         }
         Button(
-            onClick = { onPreview.invoke() },
+            onClick = {
+                if (states.bitmapList.isNotEmpty()) {
+                    onPreview.invoke()
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
                 .height(50.dp)
-                .align(Alignment.BottomCenter)
+                .align(Alignment.BottomCenter),
+            colors = ButtonDefaults.buttonColors(backgroundColor = Primary)
         ) {
             Text(text = "生成春联")
         }

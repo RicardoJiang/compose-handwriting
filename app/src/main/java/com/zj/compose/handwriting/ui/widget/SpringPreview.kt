@@ -29,11 +29,20 @@ fun SpringPreviewPage(onBack: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        SpringPreview()
+        AppToolsBar(title = "长按保存春联", onBack = {
+            onBack.invoke()
+        })
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            SpringPreview()
+        }
     }
+
 }
 
 @Composable
@@ -77,13 +86,6 @@ fun SpringPreview() {
 
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawImage(bitmap.asImageBitmap(), Offset.Zero)
-//            drawRect(Color.Red, Offset.Zero, size = size)
-//            for (i in states.bitmapList.indices) {
-//                drawImage(
-//                    states.bitmapList[i].asImageBitmap(),
-//                    Offset(0f, itemSize * i)
-//                )
-//            }
         }
     }
 }
